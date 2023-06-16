@@ -1,14 +1,14 @@
-import icons from 'url:../../img/icons.svg';
-import View from './view.js';
+import icons from "url:../../img/icons.svg";
+import View from "./view.js";
 
 class PaginationView extends View {
   constructor() {
-    super('.pagination');
+    super(".pagination");
   }
 
   addHandlerClick(handler) {
-    this._parentElement.addEventListener('click', function (e) {
-      const btn = e.target.closest('.btn--inline');
+    this._parentElement.addEventListener("click", function (e) {
+      const btn = e.target.closest(".btn--inline");
       if (!btn) return;
       const gotoPage = Number(btn.dataset.goto);
       handler(gotoPage);
@@ -16,12 +16,10 @@ class PaginationView extends View {
   }
 
   _generateMarkup() {
-    console.log(this._data);
     const curPage = this._data.page;
     const numPages = Math.ceil(
       this._data.results.length / this._data.resultsPerPage
     );
-    console.log(curPage, numPages);
     if (curPage == 1 && numPages > 1) {
       return `<button data-goto="${
         curPage + 1
@@ -62,7 +60,7 @@ class PaginationView extends View {
         </svg>
       </button>`;
     }
-    return '';
+    return "";
   }
 }
 
