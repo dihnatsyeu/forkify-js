@@ -1,16 +1,17 @@
-import { async } from 'regenerator-runtime';
-import { API_URL, RESULTS_PER_PAGE } from './config.js';
+import { async } from "regenerator-runtime";
+import { API_URL, RESULTS_PER_PAGE, START_SEARCH_PAGE } from "./config.js";
 
-import { getJSON } from './helpers.js';
+import { getJSON } from "./helpers.js";
 
 export const state = {
   recipe: {},
   search: {
-    page: 1,
-    query: '',
+    page: START_SEARCH_PAGE,
+    query: "",
     results: [],
     resultsPerPage: RESULTS_PER_PAGE,
   },
+  bookMarks: [],
 };
 
 export const loadRecipe = async function (id) {
@@ -27,9 +28,18 @@ export const loadRecipe = async function (id) {
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients,
     };
+    if (state.bookMarks.some((bookmark) => bookmark.id === id)) {
+      state.recipe.bookmarked = true;
+    } else {
+      state.recipe.bookmarked = false;
+    }
   } catch (error) {
     throw error;
   }
+};
+
+export const refreshSearchState = function () {
+  state.search.page = START_SEARCH_PAGE;
 };
 
 export const loadSearchResults = async function (query) {
@@ -37,7 +47,7 @@ export const loadSearchResults = async function (query) {
     state.search.query = query;
 
     const data = await getJSON(`${API_URL}?search=${query}`);
-    state.search.results = data.data.recipes.map(rec => {
+    state.search.results = data.data.recipes.map((rec) => {
       return {
         id: rec.id,
         title: rec.title,
@@ -57,4 +67,24 @@ export const getSearchResultsPage = function (page = state.search.page) {
   const start = (page - 1) * state.search.resultsPerPage;
   const end = page * state.search.resultsPerPage;
   return state.search.results.slice(start, end);
+};
+
+export const updateServings = function (newServings) {
+  state.recipe.ingredients.forEach((ingridient) => {
+    ingridient.quantity =
+      (ingridient.quantity * newServings) / state.recipe.servings;
+  });
+  state.recipe.servings = newServings;
+};
+
+export const addBookMark = function (recipe) {
+  state.bookMarks.push(recipe);
+
+  if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
+};
+
+export const deleteBookmark = function (id) {
+  const index = state.bookMarks.findIndex((el) => el.id === id);
+  state.bookMarks.splice(index, 1);
+  if (id === state.recipe.id) state.recipe.bookmarked = false;
 };
